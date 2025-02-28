@@ -44,10 +44,10 @@ export default function Header() {
         <Link href='/about'>
           <li className='hidden md:inline text-slate-700 hover:underline'>
             About 
-            <h1>hello yyy</h1>
           </li>
         </Link>
-        {/* <SignedIn>
+
+        <SignedIn>
           <UserButton />
         </SignedIn>
         <SignedOut>
@@ -56,12 +56,13 @@ export default function Header() {
               Sign In
             </li>
           </Link>
-        </SignedOut> */}
-           <Link href='/sign-in'>
+        </SignedOut>
+
+           {/* <Link href='/sign-in'>
             <li className='hidden md:inline text-slate-700 hover:underline'>
               Sign In
             </li>
-          </Link>
+          </Link> */}
       </ul>
     </div>
   </header>
