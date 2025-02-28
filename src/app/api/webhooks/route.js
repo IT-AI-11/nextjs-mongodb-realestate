@@ -5,7 +5,9 @@
 
 import { Webhook } from 'svix'
 import { headers } from 'next/headers'
-import { WebhookEvent } from '@clerk/nextjs/server'
+//import { WebhookEvent } from '@clerk/nextjs/server'
+import { createOrUpdateUser, deleteUser } from '@/lib/actions/user'
+import { clerkClient } from '@clerk/nextjs/server';
 
 export async function POST(req) {
   const SIGNING_SECRET = process.env.SIGNING_SECRET
@@ -52,8 +54,8 @@ export async function POST(req) {
 
   // Do something with payload
   // For this guide, log payload to console
-  const { id } = evt.data
-  const eventType = evt.type
+  const { id } = evt?.data
+  const eventType = evt?.type
   // will be shown in console.log() of the Vercel logs panel
   //console.log(`777Received webhook with ID ${id} and event type of ${eventType}`)   original
   //console.log('777Webhook payload:', body)    original
@@ -61,21 +63,64 @@ export async function POST(req) {
 
 
 
-  if (evt.type === 'user.created') {
-    // will be shown in console.log() of the Vercel logs panel, NOT in Node.js Terminal
-    console.log('CREATED777 userId:', evt.data.id)
+//   if (evt.type === 'user.created') {
+//     // will be shown in console.log() of the Vercel logs panel, NOT in Node.js Terminal
+//     console.log('CREATED777 userId:', evt.data.id)
+//   }
+
+//   if (evt.type === 'user.updated') {
+//     // will be shown in console.log() of the Vercel logs panel, NOT in Node.js Terminal
+//     console.log('UPDATED777 userId:', evt.data.id)
+//   }
+
+//   if (evt.type === 'user.deleted') {
+//     // will be shown in console.log() of the Vercel logs panel, NOT in Node.js Terminal
+//     console.log('DELETED777 userId:', evt.data.id)
+//   }
+
+
+
+
+if (eventType === 'user.created' || eventType === 'user.updated') {
+    const { first_name, last_name, image_url, email_addresses } = evt?.data;
+    try {
+      // this is a response  
+      const user = await createOrUpdateUser(
+        id,
+        first_name,
+        last_name,
+        image_url,
+        email_addresses
+      );
+      if (user && eventType === 'user.created') {
+        try {
+          await clerkClient.users.updateUserMetadata(id, {
+            publicMetadata: {
+              userMogoId: user._id,
+            },
+          });
+        } catch (error) {
+          console.log('999Error: Could not update user metadata:', error);
+        }
+      }
+    } catch (error) {
+      console.log('999Error: Could not create or update user:', error);
+      return new Response('999Error: Could not create or update user', {
+        status: 400,
+      });
+    }
   }
 
-  if (evt.type === 'user.updated') {
-    // will be shown in console.log() of the Vercel logs panel, NOT in Node.js Terminal
-    console.log('UPDATED777 userId:', evt.data.id)
+  if (eventType === 'user.deleted') {
+    try {
+      await deleteUser(id);
+    } catch (error) {
+      console.log('999Error: Could not delete user:', error);
+      return new Response('999Error: Could not delete user', {
+        status: 400,
+      });
+    }
   }
-
-  if (evt.type === 'user.deleted') {
-    // will be shown in console.log() of the Vercel logs panel, NOT in Node.js Terminal
-    console.log('DELETED777 userId:', evt.data.id)
-  }
-
 
 
 
