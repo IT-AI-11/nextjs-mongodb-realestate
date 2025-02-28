@@ -96,7 +96,7 @@ if (eventType === 'user.created' || eventType === 'user.updated') {
         try {
           await clerkClient.users.updateUserMetadata(id, {
             publicMetadata: {
-              userMogoId: user._id,
+              userMongoId777: user._id,
             },
           });
         } catch (error) {
